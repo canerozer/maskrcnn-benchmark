@@ -464,3 +464,21 @@ _C.DTYPE = "float32"
 
 # Enable verbosity in apex.amp
 _C.AMP_VERBOSE = False
+
+# ---------------------------------------------------------------------------- #
+# LSTM options
+# ---------------------------------------------------------------------------- #
+# LSTM to be put at the end of the Mask R-CNN layer.
+_C.MODEL.LSTM = CN()
+
+# Use LSTM?
+_C.MODEL.LSTM_ON = False
+
+# Train only LSTM's?
+_C.MODEL.LSTM_TRAIN_ONLY = True
+
+# Size of hidden dim
+_C.MODEL.LSTM.H_STATE = 512
+
+# Using Bidirectional LSTMs?
+_C.MODEL.LSTM.BIDIRECTIONAL = False

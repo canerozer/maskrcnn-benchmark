@@ -4,6 +4,8 @@ import torch
 from .box_head.box_head import build_roi_box_head
 from .mask_head.mask_head import build_roi_mask_head
 from .keypoint_head.keypoint_head import build_roi_keypoint_head
+from .lstm_head.lstm_head import build_lstm_head
+from .lstm_head.utils import select_detection
 
 
 class CombinedROIHeads(torch.nn.ModuleDict):
@@ -52,7 +54,19 @@ class CombinedROIHeads(torch.nn.ModuleDict):
             # this makes the API consistent during training and testing
             x, detections, loss_keypoint = self.keypoint(keypoint_features, detections, targets)
             losses.update(loss_keypoint)
+
+        if self.cfg.MODEL.LSTM_ON:
+            # Selecting the 
+            lstm_features = x
+            detections = select_detection(detections)
+            x, detections, loss_lstm = self.lstm(lstm_features, detections, targets)
+
+            if self.cfg.MODEL.LSTM_TRAIN_ONLY:
+                losses.clear()
+                losses.update(loss_lstm)            
+
         return x, detections, losses
+            
 
 
 def build_roi_heads(cfg, in_channels):
@@ -68,6 +82,8 @@ def build_roi_heads(cfg, in_channels):
         roi_heads.append(("mask", build_roi_mask_head(cfg, in_channels)))
     if cfg.MODEL.KEYPOINT_ON:
         roi_heads.append(("keypoint", build_roi_keypoint_head(cfg, in_channels)))
+    if cfg.MODEL.LSTM_ON:
+        roi_heads.append(("lstm", build_lstm_head(cfg, in_channels)))
 
     # combine individual heads in a single module
     if roi_heads:
